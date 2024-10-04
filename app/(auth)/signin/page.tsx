@@ -1,16 +1,55 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { BookOpen, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
 export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [savedData, setSavedData] = useState(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const data = localStorage.getItem("signUpFormData");
+    if (data) {
+      setSavedData(JSON.parse(data));
+    }
+  }, []);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (savedData) {
+      if (
+        formData.email === savedData.email &&
+        formData.password === savedData.password
+      ) {
+        // alert("Login successful!");
+        router.push("/dashboard");
+      } else {
+        alert("Invalid email or password.");
+      }
+    } else {
+      alert("No user data found. Please sign up first.");
+    }
   };
 
   return (
@@ -36,7 +75,7 @@ export default function SignIn() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form className="space-y-6" action="#" method="POST">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <Input
               label="Email address"
               id="email"
@@ -44,6 +83,8 @@ export default function SignIn() {
               type="email"
               autoComplete="email"
               required
+              value={formData.email}
+              onChange={handleChange}
             />
 
             <div>
@@ -61,6 +102,8 @@ export default function SignIn() {
                   autoComplete="current-password"
                   required
                   className="pr-10"
+                  value={formData.password}
+                  onChange={handleChange}
                 />
                 <button
                   type="button"
@@ -128,27 +171,6 @@ export default function SignIn() {
                   className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
                 >
                   <span className="sr-only">Sign in with Facebook</span>
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M20 10c0-5.523-4.477-10-10-10S0 4.477 0 10c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V10h2.54V7.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V10h2.773l-.443 2.89h-2.33v6.988C16.343 19.128 20 14.991 20 10z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </a>
-              </div>
-
-              <div>
-                <a
-                  href="#"
-                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                >
-                  <span className="sr-only">Sign in with Twitter</span>
                   <svg
                     className="w-5 h-5"
                     fill="currentColor"

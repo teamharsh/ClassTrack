@@ -1,66 +1,29 @@
-"use client";
+'use client'
 
-import React, { useState } from "react";
-import Link from "next/link";
-import {
-  BookOpen,
-  Search,
-  Settings,
-  LogOut,
-  User,
-  Plus,
-  Eye,
-  Edit3,
-} from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-
-// Mock data for folders
-const initialFolders = [
-  {
-    id: 1,
-    title: "Introduction to Computer Science",
-    branch: "Computer Science",
-    semester: "Fall",
-    year: 2023,
-  },
-  {
-    id: 2,
-    title: "Data Structures",
-    branch: "Computer Science",
-    semester: "Spring",
-    year: 2023,
-  },
-  {
-    id: 3,
-    title: "Machine Learning",
-    branch: "Artificial Intelligence",
-    semester: "Fall",
-    year: 2023,
-  },
-  {
-    id: 4,
-    title: "Web Development",
-    branch: "Information Technology",
-    semester: "Spring",
-    year: 2023,
-  },
-];
+import React, { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { BookOpen, Search, Settings, LogOut, User, Plus, Eye, Edit3 } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 
 export default function Dashboard() {
-  const [folders] = useState(initialFolders);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [branchFilter, setBranchFilter] = useState("");
-  const [semesterFilter, setSemesterFilter] = useState("");
-  const [yearFilter, setYearFilter] = useState("");
+  const [folders, setFolders] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [branchFilter, setBranchFilter] = useState('')
+  const [semesterFilter, setSemesterFilter] = useState('')
+  const [yearFilter, setYearFilter] = useState('')
+
+  useEffect(() => {
+    const savedFolders = JSON.parse(localStorage.getItem('folders') || '[]')
+    setFolders(savedFolders)
+  }, [])
 
   const filteredFolders = folders.filter(
     (folder) =>
       folder.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (branchFilter === "" || folder.branch === branchFilter) &&
-      (semesterFilter === "" || folder.semester === semesterFilter) &&
-      (yearFilter === "" || folder.year.toString() === yearFilter)
-  );
+      (branchFilter === '' || folder.branch === branchFilter) &&
+      (semesterFilter === '' || folder.semester === semesterFilter) &&
+      (yearFilter === '' || folder.year.toString() === yearFilter)
+  )
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -74,10 +37,7 @@ export default function Dashboard() {
             <Link href="/profile" className="text-gray-500 hover:text-gray-700">
               <User className="w-6 h-6" />
             </Link>
-            <Link
-              href="/settings"
-              className="text-gray-500 hover:text-gray-700"
-            >
+            <Link href="/settings" className="text-gray-500 hover:text-gray-700">
               <Settings className="w-6 h-6" />
             </Link>
             <Link href="/logout" className="text-gray-500 hover:text-gray-700">
@@ -101,12 +61,12 @@ export default function Dashboard() {
         <div className="mb-6 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
           <div className="flex-grow">
             <div className="relative">
-              <Input
+              <input
                 type="text"
                 placeholder="Search classes..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             </div>
@@ -118,12 +78,11 @@ export default function Dashboard() {
           >
             <option value="">All Branches</option>
             <option value="Computer Science">Computer Science</option>
-            <option value="Artificial Intelligence">
-              Artificial Intelligence
-            </option>
-            <option value="Information Technology">
-              Information Technology
-            </option>
+            <option value="Artificial Intelligence">Artificial Intelligence</option>
+            <option value="Information Technology">Information Technology</option>
+            <option value="Electronics and Communication">Electronics and Communication</option>
+            <option value="Electrical Engineering">Electrical Engineering</option>
+            <option value="Civil Engineering">Civil Engineering</option>
           </select>
           <select
             value={semesterFilter}
@@ -131,8 +90,14 @@ export default function Dashboard() {
             className="block w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">All Semesters</option>
-            <option value="Fall">Fall</option>
-            <option value="Spring">Spring</option>
+            <option value="1">1st Semester</option>
+            <option value="2">2nd Semester</option>
+            <option value="3">3rd Semester</option>
+            <option value="4">4th Semester</option>
+            <option value="5">5th Semester</option>
+            <option value="6">6th Semester</option>
+            <option value="7">7th Semester</option>
+            <option value="8">8th Semester</option>
           </select>
           <select
             value={yearFilter}
@@ -140,91 +105,54 @@ export default function Dashboard() {
             className="block w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">All Years</option>
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
             <option value="2023">2023</option>
             <option value="2022">2022</option>
+            <option value="2021">2021</option>
           </select>
         </div>
 
-        {filteredFolders.length === 0 ? (
-          <div className="text-center py-12">
-            <h3 className="mt-2 text-sm font-semibold text-gray-900">
-              No classes found
-            </h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Get started by creating a new class.
-            </p>
-            <div className="mt-6">
-              <Button>
-                <Plus className="w-5 h-5 mr-2" />
-                New Class
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredFolders.map((folder) => (
-              <div
-                key={folder.id}
-                className="bg-white shadow-sm rounded-lg p-6"
-              >
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {folder.title}
-                </h3>
-                <p className="text-sm text-gray-500 mb-4">
-                  {folder.branch} • {folder.semester} {folder.year}
-                </p>
-                <div className="flex space-x-2">
-                  <Link href="/mark-attendance">
-                    <Button variant="outline" size="sm">
-                      Take Attendance
-                    </Button>
-                  </Link>
-                  <Link href="/attendance-summary">
-                    <Button variant="outline" size="sm">
-                      <Eye className="w-4 h-4 mr-2" />
-                      View Records
-                    </Button>
-                  </Link>
-                  <Link href="/mark-attendance">
-                    <Button variant="outline" size="sm">
-                      <Edit3 className="w-4 h-4" />
-                      <span className="sr-only">Edit</span>
-                    </Button>
-                  </Link>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredFolders.map((folder) => (
+            <div key={folder.id} className="bg-white shadow-sm rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">{folder.title}</h2>
+              <p className="text-sm text-gray-500 mb-4">{folder.description}</p>
+                <div className="flex space-x-4">
+                <Link href={`/mark-attendance?id=${folder.id}`}>
+                  <Button variant="primary">
+                  <Eye className="w-4 h-4 mr-2" />
+                  Mark Attendance
+                  </Button>
+                </Link>
+                <Link href={`/create-folder?id=${folder.id}`}>
+                  <Button variant="primary">
+                  <Edit3 className="w-4 h-4 mr-2" />
+                  Edit Class
+                  </Button>
+                </Link>
+                <Link href={`/attendance-summary?id=${folder.id}`}>
+                  <Button variant="outline">
+                  <Eye className="w-4 h-4 mr-2" />
+                  View Summary
+                  </Button>
+                </Link>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
       </main>
 
       <footer className="bg-white border-t">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <p className="text-sm text-gray-500">
-            &copy; 2023 ClassTrack. All rights reserved.
-          </p>
+          <p className="text-sm text-gray-500">&copy; 2023 ClassTrack. All rights reserved.</p>
           <div className="flex space-x-4">
-            <Link
-              href="/support"
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
-              Support
-            </Link>
-            <Link
-              href="/terms"
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
-              Terms
-            </Link>
-            <Link
-              href="/privacy"
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
-              Privacy
-            </Link>
+            <Link href="/support" className="text-sm text-gray-500 hover:text-gray-700">Support</Link>
+            <Link href="/terms" className="text-sm text-gray-500 hover:text-gray-700">Terms</Link>
+            <Link href="/privacy" className="text-sm text-gray-500 hover:text-gray-700">Privacy</Link>
           </div>
         </div>
       </footer>
     </div>
-  );
+  )
 }

@@ -1,16 +1,48 @@
-'use client';
+"use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { BookOpen, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { useRouter } from "next/navigation";
 
 export default function SignUp() {
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    terms: false,
+  });
+
+  useEffect(() => {
+    const savedData = localStorage.getItem("signUpFormData");
+    if (savedData) {
+      setFormData(JSON.parse(savedData));
+    }
+  }, []);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    localStorage.setItem("signUpFormData", JSON.stringify(formData));
+
+    router.push("/dashboard");
+    // Add your form submission logic here
   };
 
   return (
@@ -36,7 +68,7 @@ export default function SignUp() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form className="space-y-6" action="#" method="POST">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <Input
               label="Full name"
               id="name"
@@ -44,6 +76,8 @@ export default function SignUp() {
               type="text"
               autoComplete="name"
               required
+              value={formData.name}
+              onChange={handleChange}
             />
 
             <Input
@@ -53,6 +87,8 @@ export default function SignUp() {
               type="email"
               autoComplete="email"
               required
+              value={formData.email}
+              onChange={handleChange}
             />
 
             <div>
@@ -70,6 +106,8 @@ export default function SignUp() {
                   autoComplete="new-password"
                   required
                   className="pr-10"
+                  value={formData.password}
+                  onChange={handleChange}
                 />
                 <button
                   type="button"
@@ -92,6 +130,8 @@ export default function SignUp() {
                 type="checkbox"
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 required
+                checked={formData.terms}
+                onChange={handleChange}
               />
               <label
                 htmlFor="terms"

@@ -1,24 +1,35 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { BookOpen, ArrowLeft, Download } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-
-// Mock data for attendance summary
-const initialAttendanceData = [
-  { id: 1, name: 'Alice Johnson', totalClasses: 20, attended: 18, percentage: 90 },
-  { id: 2, name: 'Bob Smith', totalClasses: 20, attended: 15, percentage: 75 },
-  { id: 3, name: 'Charlie Brown', totalClasses: 20, attended: 20, percentage: 100 },
-  { id: 4, name: 'Diana Ross', totalClasses: 20, attended: 17, percentage: 85 },
-  { id: 5, name: 'Edward Norton', totalClasses: 20, attended: 16, percentage: 80 },
-]
+import OverallAttendance from '@/components/OverallAttendance'
 
 export default function AttendanceSummary() {
-  const [attendanceData] = useState(initialAttendanceData)
+  const [attendanceData, setAttendanceData] = useState([])
+  const [selectedDate, setSelectedDate] = useState('')
+  const [filteredAttendanceData, setFilteredAttendanceData] = useState([])
+  const searchParams = useSearchParams()
+  const folderId = searchParams.get('id')
+
+  useEffect(() => {
+    const savedAttendanceData = JSON.parse(localStorage.getItem('attendanceData') || '[]')
+    const filteredData = savedAttendanceData.filter((record: any) => record.folderId === parseInt(folderId || '0'))
+    setAttendanceData(filteredData.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime()))
+  }, [folderId])
+
+  useEffect(() => {
+    if (selectedDate) {
+      const filteredData = attendanceData.filter((record: any) => record.date === selectedDate)
+      setFilteredAttendanceData(filteredData)
+    } else {
+      setFilteredAttendanceData([])
+    }
+  }, [selectedDate, attendanceData])
 
   const handleDownload = () => {
-    // Here you would typically generate and download a report
     console.log('Downloading attendance report...')
     alert('Attendance report download started!')
   }
@@ -47,48 +58,64 @@ export default function AttendanceSummary() {
               Download Report
             </Button>
           </div>
-          <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Total Classes
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Classes Attended
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Attendance %
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {attendanceData.map((student) => (
-                  <tr key={student.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {student.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {student.totalClasses}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {student.attended}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        student.percentage >= 75 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {student.percentage}%
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="mb-4">
+            <label htmlFor="date" className="block text-sm font-medium text-gray-700">
+              Select Date
+            </label>
+            <input
+              type="date"
+              id="date"
+              name="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+            />
           </div>
+          {selectedDate ? (
+            <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+              {filteredAttendanceData.length > 0 ? (
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Name
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Date
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredAttendanceData.map((record) => (
+                      <tr key={`${record.id}-${record.date}`}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {record.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {record.date}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            record.present ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                            {record.present ? 'Present' : 'Absent'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="px-6 py-4 text-sm text-gray-500">
+                  No class taken on this date.
+                </div>
+              )}
+            </div>
+          ) : null}
+          <OverallAttendance attendanceData={attendanceData} />
         </div>
       </main>
 

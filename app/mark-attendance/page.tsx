@@ -1,38 +1,49 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { BookOpen, ArrowLeft, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 
-// Mock data for students
-const initialStudents = [
-  { id: 1, name: 'Alice Johnson', present: false },
-  { id: 2, name: 'Bob Smith', present: false },
-  { id: 3, name: 'Charlie Brown', present: false },
-  { id: 4, name: 'Diana Ross', present: false },
-  { id: 5, name: 'Edward Norton', present: false },
-]
-
 export default function MarkAttendance() {
-  const [students, setStudents] = useState(initialStudents)
+  const [students, setStudents] = useState([])
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const folderId = searchParams.get('id')
 
-  const toggleAttendance = (id: number) => {
+  useEffect(() => {
+    if (folderId) {
+      const existingFolders = JSON.parse(localStorage.getItem('folders') || '[]')
+      const folder = existingFolders.find((f) => f.id === parseInt(folderId))
+      if (folder) {
+        setStudents(folder.students.map((student, index) => ({ ...student, present: false, uniqueId: index })))
+      }
+    }
+  }, [folderId])
+
+  const toggleAttendance = (uniqueId: number) => {
     setStudents(prevStudents =>
       prevStudents.map(student =>
-        student.id === id ? { ...student, present: !student.present } : student
+        student.uniqueId === uniqueId ? { ...student, present: !student.present } : student
       )
     )
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Here you would typically send the attendance data to your backend
-    console.log('Attendance data:', { date, students })
-    // Show a success message to the user
+    const existingAttendance = JSON.parse(localStorage.getItem('attendanceData') || '[]')
+    const newAttendance = students.map(student => ({
+      id: student.id,
+      name: student.name,
+      present: student.present,
+      date,
+      folderId: parseInt(folderId)
+    }))
+    localStorage.setItem('attendanceData', JSON.stringify([...existingAttendance, ...newAttendance]))
     alert('Attendance marked successfully!')
-    // Redirect to the dashboard or clear the form
+    router.push('/dashboard')
   }
 
   return (
@@ -70,11 +81,11 @@ export default function MarkAttendance() {
             </div>
             <div className="space-y-4">
               {students.map(student => (
-                <div key={student.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                <div key={student.uniqueId} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
                   <span className="text-sm font-medium text-gray-700">{student.name}</span>
                   <Button
                     type="button"
-                    onClick={() => toggleAttendance(student.id)}
+                    onClick={() => toggleAttendance(student.uniqueId)}
                     variant={student.present ? 'primary' : 'outline'}
                     size="sm"
                   >

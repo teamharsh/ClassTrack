@@ -1,10 +1,11 @@
-'use client'
+'use client';
 
-import React, { useState } from 'react'
-import Link from 'next/link'
-import { BookOpen, ArrowLeft } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { BookOpen, ArrowLeft, Plus, Trash } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 export default function CreateFolder() {
   const [folderData, setFolderData] = useState({
@@ -12,22 +13,71 @@ export default function CreateFolder() {
     branch: '',
     semester: '',
     year: new Date().getFullYear(),
-    description: ''
-  })
+    description: '',
+    students: []
+  });
+  const [studentName, setStudentName] = useState('');
+  const [studentRollNumber, setStudentRollNumber] = useState('');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const folderId = searchParams.get('id');
+
+  useEffect(() => {
+    if (folderId) {
+      const existingFolders = JSON.parse(localStorage.getItem('folders') || '[]');
+      const folder = existingFolders.find((f) => f.id === parseInt(folderId));
+      if (folder) {
+        setFolderData(folder);
+      }
+    }
+  }, [folderId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFolderData(prevData => ({ ...prevData, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setFolderData(prevData => ({ ...prevData, [name]: value }));
+  };
+
+  const handleStudentNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setStudentName(e.target.value);
+  };
+
+  const handleStudentRollNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setStudentRollNumber(e.target.value);
+  };
+
+  const addStudent = () => {
+    if (studentName.trim() !== '' && studentRollNumber.trim() !== '') {
+      setFolderData(prevData => ({
+        ...prevData,
+        students: [...prevData.students, { name: studentName.trim(), rollNumber: studentRollNumber.trim() }]
+      }));
+      setStudentName('');
+      setStudentRollNumber('');
+    }
+  };
+
+  const removeStudent = (index: number) => {
+    setFolderData(prevData => ({
+      ...prevData,
+      students: prevData.students.filter((_, i) => i !== index)
+    }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Here you would typically send the folder data to your backend
-    console.log('New folder data:', folderData)
-    // Show a success message to the user
-    alert('Folder created successfully!')
-    // Redirect to the dashboard or clear the form
-  }
+    e.preventDefault();
+    const existingFolders = JSON.parse(localStorage.getItem('folders') || '[]');
+    if (folderId) {
+      const updatedFolders = existingFolders.map((f) =>
+        f.id === parseInt(folderId) ? folderData : f
+      );
+      localStorage.setItem('folders', JSON.stringify(updatedFolders));
+    } else {
+      const newFolder = { ...folderData, id: existingFolders.length + 1 };
+      localStorage.setItem('folders', JSON.stringify([...existingFolders, newFolder]));
+    }
+    alert('Folder saved successfully!');
+    router.push('/dashboard');
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -46,7 +96,7 @@ export default function CreateFolder() {
 
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-2xl font-semibold text-gray-900 mb-6">Create New Class</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 mb-6">{folderId ? 'Edit Class' : 'Create New Class'}</h1>
           <form onSubmit={handleSubmit} className="bg-white shadow-sm rounded-lg p-6">
             <div className="space-y-4">
               <div>
@@ -79,6 +129,8 @@ export default function CreateFolder() {
                   <option value="Information Technology">Information Technology</option>
                   <option value="Electrical Engineering">Electrical Engineering</option>
                   <option value="Mechanical Engineering">Mechanical Engineering</option>
+                  <option value="Electronics and Communication Engineering">Electronics and Communication Engineering</option>
+                  <option value="Civil Engineering">Civil Engineering</option>
                 </select>
               </div>
               <div>
@@ -94,9 +146,14 @@ export default function CreateFolder() {
                   required
                 >
                   <option value="">Select a semester</option>
-                  <option value="Fall">Fall</option>
-                  <option value="Spring">Spring</option>
-                  <option value="Summer">Summer</option>
+                  <option value="1">Semester 1</option>
+                  <option value="2">Semester 2</option>
+                  <option value="3">Semester 3</option>
+                  <option value="4">Semester 4</option>
+                  <option value="5">Semester 5</option>
+                  <option value="6">Semester 6</option>
+                  <option value="7">Semester 7</option>
+                  <option value="8">Semester 8</option>
                 </select>
               </div>
               <div>
@@ -127,10 +184,50 @@ export default function CreateFolder() {
                   className="mt-1 block w-full px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                 ></textarea>
               </div>
+                <div>
+                  <label htmlFor="students" className="block text-sm font-medium text-gray-700">
+                    Students
+                  </label>
+                  <div className="flex space-x-2">
+                    <Input
+                      type="text"
+                      id="studentRollNumber"
+                      name="studentRollNumber"
+                      value={studentRollNumber}
+                      onChange={handleStudentRollNumberChange}
+                      placeholder="Enter roll number"
+                      className="flex-1"
+                    />
+                    <Input
+                      type="text"
+                      id="studentName"
+                      name="studentName"
+                      value={studentName}
+                      onChange={handleStudentNameChange}
+                      placeholder="Enter student name"
+                      className="flex-1"
+                    />
+                    <Button className="h-10" type="button" onClick={addStudent}>
+                      <Plus className="w-5 h-5" />
+                    </Button>
+                  </div>
+                  <ul className="mt-2 space-y-2">
+                    {folderData.students
+                      .sort((a, b) => a.rollNumber.localeCompare(b.rollNumber))
+                      .map((student, index) => (
+                        <li key={index} className="flex justify-between items-center bg-gray-100 p-2 rounded-md">
+                          <span>{student.rollNumber} - {student.name}</span>
+                          <Button type="button" variant="outline" size="sm" onClick={() => removeStudent(index)}>
+                            <Trash className="w-4 h-4" />
+                          </Button>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
             </div>
             <div className="mt-6">
               <Button type="submit" className="w-full">
-                Create Class
+                {folderId ? 'Save Changes' : 'Create Class'}
               </Button>
             </div>
           </form>
@@ -148,5 +245,5 @@ export default function CreateFolder() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
