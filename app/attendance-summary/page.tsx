@@ -1,46 +1,46 @@
-'use client'
+'use client';
 
-import React, { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
-import { BookOpen, ArrowLeft, Download } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import OverallAttendance from '@/components/OverallAttendance'
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { BookOpen, ArrowLeft, Download } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import OverallAttendance from '@/components/OverallAttendance';
 
 interface AttendanceRecord {
-  id: number
-  folderId: number
-  date: string
-  name: string
-  present: boolean
+  id: number;
+  folderId: number;
+  date: string;
+  name: string;
+  present: boolean;
 }
 
 export default function AttendanceSummary() {
-  const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([])
-  const [selectedDate, setSelectedDate] = useState<string>('')
-  const [filteredAttendanceData, setFilteredAttendanceData] = useState<AttendanceRecord[]>([])
-  const searchParams = useSearchParams()
-  const folderId = searchParams.get('id')
+  const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
+  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [filteredAttendanceData, setFilteredAttendanceData] = useState<AttendanceRecord[]>([]);
+  const searchParams = useSearchParams();
+  const folderId = searchParams.get('id');
 
   useEffect(() => {
-    const savedAttendanceData: AttendanceRecord[] = JSON.parse(localStorage.getItem('attendanceData') || '[]')
-    const filteredData = savedAttendanceData.filter((record) => record.folderId === parseInt(folderId || '0'))
-    setAttendanceData(filteredData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()))
-  }, [folderId])
+    const savedAttendanceData: AttendanceRecord[] = JSON.parse(localStorage.getItem('attendanceData') || '[]');
+    const filteredData = savedAttendanceData.filter((record: AttendanceRecord) => record.folderId === parseInt(folderId || '0'));
+    setAttendanceData(filteredData.sort((a: AttendanceRecord, b: AttendanceRecord) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+  }, [folderId]);
 
   useEffect(() => {
     if (selectedDate) {
-      const filteredData = attendanceData.filter((record) => record.date === selectedDate)
-      setFilteredAttendanceData(filteredData)
+      const filteredData = attendanceData.filter((record: AttendanceRecord) => record.date === selectedDate);
+      setFilteredAttendanceData(filteredData);
     } else {
-      setFilteredAttendanceData([])
+      setFilteredAttendanceData([]);
     }
-  }, [selectedDate, attendanceData])
+  }, [selectedDate, attendanceData]);
 
   const handleDownload = () => {
-    console.log('Downloading attendance report...')
-    alert('Attendance report download started!')
-  }
+    console.log('Downloading attendance report...');
+    alert('Attendance report download started!');
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -138,5 +138,5 @@ export default function AttendanceSummary() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
