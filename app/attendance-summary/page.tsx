@@ -7,22 +7,30 @@ import { BookOpen, ArrowLeft, Download } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import OverallAttendance from '@/components/OverallAttendance'
 
+interface AttendanceRecord {
+  id: number
+  folderId: number
+  date: string
+  name: string
+  present: boolean
+}
+
 export default function AttendanceSummary() {
-  const [attendanceData, setAttendanceData] = useState([])
-  const [selectedDate, setSelectedDate] = useState('')
-  const [filteredAttendanceData, setFilteredAttendanceData] = useState([])
+  const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([])
+  const [selectedDate, setSelectedDate] = useState<string>('')
+  const [filteredAttendanceData, setFilteredAttendanceData] = useState<AttendanceRecord[]>([])
   const searchParams = useSearchParams()
   const folderId = searchParams.get('id')
 
   useEffect(() => {
-    const savedAttendanceData = JSON.parse(localStorage.getItem('attendanceData') || '[]')
-    const filteredData = savedAttendanceData.filter((record: any) => record.folderId === parseInt(folderId || '0'))
-    setAttendanceData(filteredData.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime()))
+    const savedAttendanceData: AttendanceRecord[] = JSON.parse(localStorage.getItem('attendanceData') || '[]')
+    const filteredData = savedAttendanceData.filter((record) => record.folderId === parseInt(folderId || '0'))
+    setAttendanceData(filteredData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()))
   }, [folderId])
 
   useEffect(() => {
     if (selectedDate) {
-      const filteredData = attendanceData.filter((record: any) => record.date === selectedDate)
+      const filteredData = attendanceData.filter((record) => record.date === selectedDate)
       setFilteredAttendanceData(filteredData)
     } else {
       setFilteredAttendanceData([])

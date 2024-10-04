@@ -1,21 +1,30 @@
-'use client'
+'use client';
 
-import React, { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { BookOpen, Search, Settings, LogOut, User, Plus, Eye, Edit3 } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { BookOpen, Search, Settings, LogOut, User, Plus, Eye, Edit3 } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+
+interface Folder {
+  id: number;
+  title: string;
+  branch: string;
+  semester: string;
+  year: number;
+  description: string;
+}
 
 export default function Dashboard() {
-  const [folders, setFolders] = useState([])
-  const [searchTerm, setSearchTerm] = useState('')
-  const [branchFilter, setBranchFilter] = useState('')
-  const [semesterFilter, setSemesterFilter] = useState('')
-  const [yearFilter, setYearFilter] = useState('')
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [branchFilter, setBranchFilter] = useState<string>('');
+  const [semesterFilter, setSemesterFilter] = useState<string>('');
+  const [yearFilter, setYearFilter] = useState<string>('');
 
   useEffect(() => {
-    const savedFolders = JSON.parse(localStorage.getItem('folders') || '[]')
-    setFolders(savedFolders)
-  }, [])
+    const savedFolders: Folder[] = JSON.parse(localStorage.getItem('folders') || '[]');
+    setFolders(savedFolders);
+  }, []);
 
   const filteredFolders = folders.filter(
     (folder) =>
@@ -23,7 +32,7 @@ export default function Dashboard() {
       (branchFilter === '' || folder.branch === branchFilter) &&
       (semesterFilter === '' || folder.semester === semesterFilter) &&
       (yearFilter === '' || folder.year.toString() === yearFilter)
-  )
+  );
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -154,5 +163,5 @@ export default function Dashboard() {
         </div>
       </footer>
     </div>
-  )
+  );
 }

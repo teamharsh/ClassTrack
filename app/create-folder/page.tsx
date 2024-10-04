@@ -7,8 +7,22 @@ import { BookOpen, ArrowLeft, Plus, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
+interface Student {
+  name: string;
+  rollNumber: string;
+}
+
+interface FolderData {
+  title: string;
+  branch: string;
+  semester: string;
+  year: number;
+  description: string;
+  students: Student[];
+}
+
 export default function CreateFolder() {
-  const [folderData, setFolderData] = useState({
+  const [folderData, setFolderData] = useState<FolderData>({
     title: '',
     branch: '',
     semester: '',
@@ -16,15 +30,15 @@ export default function CreateFolder() {
     description: '',
     students: []
   });
-  const [studentName, setStudentName] = useState('');
-  const [studentRollNumber, setStudentRollNumber] = useState('');
+  const [studentName, setStudentName] = useState<string>('');
+  const [studentRollNumber, setStudentRollNumber] = useState<string>('');
   const router = useRouter();
   const searchParams = useSearchParams();
   const folderId = searchParams.get('id');
 
   useEffect(() => {
     if (folderId) {
-      const existingFolders = JSON.parse(localStorage.getItem('folders') || '[]');
+      const existingFolders: FolderData[] = JSON.parse(localStorage.getItem('folders') || '[]');
       const folder = existingFolders.find((f) => f.id === parseInt(folderId));
       if (folder) {
         setFolderData(folder);
@@ -65,7 +79,7 @@ export default function CreateFolder() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const existingFolders = JSON.parse(localStorage.getItem('folders') || '[]');
+    const existingFolders: FolderData[] = JSON.parse(localStorage.getItem('folders') || '[]');
     if (folderId) {
       const updatedFolders = existingFolders.map((f) =>
         f.id === parseInt(folderId) ? folderData : f

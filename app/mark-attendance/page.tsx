@@ -1,50 +1,62 @@
-'use client'
+'use client';
 
-import React, { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { BookOpen, ArrowLeft, Check, X } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { BookOpen, ArrowLeft, Check, X } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+
+interface Student {
+  id: number;
+  name: string;
+  present: boolean;
+  uniqueId: number;
+}
+
+interface Folder {
+  id: number;
+  students: Student[];
+}
 
 export default function MarkAttendance() {
-  const [students, setStudents] = useState([])
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0])
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const folderId = searchParams.get('id')
+  const [students, setStudents] = useState<Student[]>([]);
+  const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const folderId = searchParams.get('id');
 
   useEffect(() => {
     if (folderId) {
-      const existingFolders = JSON.parse(localStorage.getItem('folders') || '[]')
-      const folder = existingFolders.find((f) => f.id === parseInt(folderId))
+      const existingFolders: Folder[] = JSON.parse(localStorage.getItem('folders') || '[]');
+      const folder = existingFolders.find((f) => f.id === parseInt(folderId));
       if (folder) {
-        setStudents(folder.students.map((student, index) => ({ ...student, present: false, uniqueId: index })))
+        setStudents(folder.students.map((student, index) => ({ ...student, present: false, uniqueId: index })));
       }
     }
-  }, [folderId])
+  }, [folderId]);
 
   const toggleAttendance = (uniqueId: number) => {
     setStudents(prevStudents =>
       prevStudents.map(student =>
         student.uniqueId === uniqueId ? { ...student, present: !student.present } : student
       )
-    )
-  }
+    );
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const existingAttendance = JSON.parse(localStorage.getItem('attendanceData') || '[]')
+    e.preventDefault();
+    const existingAttendance = JSON.parse(localStorage.getItem('attendanceData') || '[]');
     const newAttendance = students.map(student => ({
       id: student.id,
       name: student.name,
       present: student.present,
       date,
-      folderId: parseInt(folderId)
-    }))
-    localStorage.setItem('attendanceData', JSON.stringify([...existingAttendance, ...newAttendance]))
-    alert('Attendance marked successfully!')
-    router.push('/dashboard')
-  }
+      folderId: parseInt(folderId || '0')
+    }));
+    localStorage.setItem('attendanceData', JSON.stringify([...existingAttendance, ...newAttendance]));
+    alert('Attendance marked successfully!');
+    router.push('/dashboard');
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -119,5 +131,5 @@ export default function MarkAttendance() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
